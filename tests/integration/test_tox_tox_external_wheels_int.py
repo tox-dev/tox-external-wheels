@@ -101,6 +101,32 @@ def test_finding_newest_whl(initproj, cmd, whl_dir):
     result.assert_success()
 
 
+def test_finding_partial_ext_wheel(initproj, cmd, whl_dir):
+    """Test whether fallback to regular source installation works"""
+    test_dir = str(
+        initproj(
+            "alright_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py-{a,b}
+                [testenv]
+                external_wheel =
+                    a: {toxinidir}/*app*.whl
+                commands =
+                    a: python -c "import subpar_app"
+                    b: python -c "import alright_app"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "subpar_app-0.2.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd()
+    assert "subpar" in result.session.venv_dict["py-a"].package
+    assert str(result.session.venv_dict["py-b"].package).endswith("alright_app-0.2.0.zip")
+    result.assert_success()
+
+
 def test_invalid_whl(initproj, cmd):
     str(
         initproj(
