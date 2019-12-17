@@ -1,17 +1,99 @@
-def test_run(initproj, cmd):
-    initproj(
-        "pkg123-0.7",
-        filedefs={
-            "tox.ini": """
+import os
+from shutil import copy
+
+
+def test_simple_config(initproj, cmd, whl_dir):
+    test_dir = str(
+        initproj(
+            "cool_app-0.4.0",
+            filedefs={
+                "tox.ini": """
                 [tox]
-                envlist = py, b
-                skipsdist = True
+                envlist = py
                 [testenv]
+                external_wheel =
+                    {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
                 commands=python -c "print('perform')"
-                [testenv:b]
-                cinderella = True
             """
-        },
+            },
+        )
     )
-    result = cmd("--magic", "yes")
-    result.assert_success(is_run_test_env=False)
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd()
+    result.assert_success()
+
+
+def test_more_complex_config(initproj, cmd, whl_dir):
+    test_dir = str(
+        initproj(
+            "alright_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py-{a,b}
+                [testenv]
+                external_wheel =
+                    a: {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
+                    b: {toxinidir}/subpar_app-0.2.0-py2.py3-none-any.whl
+                commands=python -c "print('perform')"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "subpar_app-0.2.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd()
+    assert "super" in result.session.venv_dict["py-a"].package
+    assert "subpar" in result.session.venv_dict["py-b"].package
+    result.assert_success()
+
+
+def test_different_commands(initproj, cmd, whl_dir):
+    test_dir = str(
+        initproj(
+            "alright_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py-{a,b}
+                [testenv]
+                external_wheel =
+                    a: {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
+                    b: {toxinidir}/subpar_app-0.2.0-py2.py3-none-any.whl
+                commands =
+                    a: python -c "import super_app"
+                    b: python -c "import subpar_app"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "subpar_app-0.2.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd()
+    assert "super" in result.session.venv_dict["py-a"].package
+    assert "subpar" in result.session.venv_dict["py-b"].package
+    result.assert_success()
+
+
+def test_finding_newest_whl(initproj, cmd, whl_dir):
+    test_dir = str(
+        initproj(
+            "alright_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                external_wheel =
+                    {toxinidir}/*app*.whl
+                commands =
+                    python -c "import subpar_app"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "subpar_app-0.2.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd()
+    assert "subpar" in result.session.venv_dict["py"].package
+    result.assert_success()
