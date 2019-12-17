@@ -3,7 +3,7 @@ resources:
   repositories:
   - repository: tox
     type: github
-    endpoint: github
+    endpoint: keller00
     name: tox-dev/azure-pipelines-template
     ref: master
 
@@ -49,6 +49,6 @@ jobs:
 
   - template: publish-pypi.yml@tox
     parameters:
-      external_feed: 'toxdev'
-      pypi_remote: 'pypi-toxdev'
+      external_feed: 'tox-external-wheels'
+      pypi_remote: 'pypi'
       dependsOn: [fix_lint, docs, package_description, dev, report_coverage]
