@@ -100,6 +100,7 @@ def test_finding_newest_whl(initproj, cmd, whl_dir):
     assert "subpar" in result.session.venv_dict["py"].package
     result.assert_success()
 
+
 def test_invalid_whl(initproj, cmd):
     str(
         initproj(
