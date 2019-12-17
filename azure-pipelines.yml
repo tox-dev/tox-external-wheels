@@ -49,6 +49,6 @@ jobs:
 
   - template: publish-pypi.yml@tox
     parameters:
-      external_feed: 'tox-external-wheels'
-      pypi_remote: 'pypi'
+      external_feed: 'pypi'
+      pypi_remote: 'tox-external-wheels'
       dependsOn: [fix_lint, docs, package_description, dev, report_coverage]

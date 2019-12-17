@@ -5,6 +5,12 @@ Versions follow `Semantic Versioning <https://semver.org/>`_ (``<major>.<minor>.
 Backward incompatible (breaking) changes will only be introduced in major versions
 with advance notice in the **Deprecations** section of releases.
 
+v0.1.1 (2019-12-17)
+--------------------
+
+- setup.cfg change, invalid license
+
+
 v0.1.0 (2019-12-17)
 --------------------
 
