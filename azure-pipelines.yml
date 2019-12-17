@@ -38,13 +38,11 @@ jobs:
         image: [linux, windows, macOs]
       py35:
         image: [linux, windows, macOs]
-      py34:
-        image: [linux, windows, macOs]
       dev: null
       package_description: null
     coverage:
       with_toxenv: 'coverage' # generate .tox/.coverage, .tox/coverage.xml after test run
-      for_envs: [py37, py36, py35, py34, py27]
+      for_envs: [py37, py36, py35, py27]
 
 
 - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
