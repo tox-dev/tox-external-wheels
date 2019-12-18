@@ -5,6 +5,12 @@ Versions follow `Semantic Versioning <https://semver.org/>`_ (``<major>.<minor>.
 Backward incompatible (breaking) changes will only be introduced in major versions
 with advance notice in the **Deprecations** section of releases.
 
+v0.1.4 (2019-12-18)
+-------------------
+
+- added ``--external_wheels`` parameter
+- renamed ``external-wheels`` testenv attribute to ``external_wheels``
+
 v0.1.3 (2019-12-17)
 --------------------
 
