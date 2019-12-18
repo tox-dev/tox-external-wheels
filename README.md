@@ -11,7 +11,21 @@ Use externally created wheels with Tox
 Features
 --------
 
-* TODO
+* The ability to define external wheel files to tests (example tox file):
+
+```
+[tox]
+envlist = py-{a,b,c}
+[testenv]
+external_wheel =
+    a: {toxinidir}/dist/*py27*.whl
+    a: {toxinidir}/dist/*py37*.whl
+commands =
+    a,b: pytest test
+    c: pip list
+```
+
+**Note**: In this case `py-c` falls back to installing from source.
 
 
 Requirements
@@ -32,7 +46,7 @@ pip install tox-external-wheels
 Usage
 -----
 
-* TODO
+Use the `external_wheel` option. Like shown in [usage](#usage)
 
 Contributing
 ------------
