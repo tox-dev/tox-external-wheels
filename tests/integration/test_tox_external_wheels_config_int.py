@@ -12,7 +12,7 @@ def test_simple_config(initproj, cmd, whl_dir):
                 [tox]
                 envlist = py
                 [testenv]
-                external_wheel =
+                external_wheels =
                     {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
                 commands=python -c "print('perform')"
             """
@@ -33,7 +33,7 @@ def test_more_complex_config(initproj, cmd, whl_dir):
                 [tox]
                 envlist = py-{a,b}
                 [testenv]
-                external_wheel =
+                external_wheels =
                     a: {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
                     b: {toxinidir}/subpar_app-0.2.0-py2.py3-none-any.whl
                 commands=python -c "print('perform')"
@@ -58,7 +58,7 @@ def test_different_commands(initproj, cmd, whl_dir):
                 [tox]
                 envlist = py-{a,b}
                 [testenv]
-                external_wheel =
+                external_wheels =
                     a: {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
                     b: {toxinidir}/subpar_app-0.2.0-py2.py3-none-any.whl
                 commands =
@@ -85,7 +85,7 @@ def test_finding_newest_whl(initproj, cmd, whl_dir):
                 [tox]
                 envlist = py
                 [testenv]
-                external_wheel =
+                external_wheels =
                     {toxinidir}/*app*.whl
                 commands =
                     python -c "import subpar_app"
@@ -111,7 +111,7 @@ def test_finding_partial_ext_wheel(initproj, cmd, whl_dir):
                 [tox]
                 envlist = py-{a,b}
                 [testenv]
-                external_wheel =
+                external_wheels =
                     a: {toxinidir}/*app*.whl
                 commands =
                     a: python -c "import subpar_app"
@@ -136,8 +136,8 @@ def test_invalid_whl(initproj, cmd):
                 [tox]
                 envlist = py
                 [testenv]
-                external_wheel =
-                    {toxinidir}/*app*.whl
+                external_wheels =
+                    *app*.whl
                 commands =
                     python -c "print('done')"
             """
