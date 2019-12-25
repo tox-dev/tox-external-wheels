@@ -43,12 +43,3 @@ jobs:
     coverage:
       with_toxenv: 'coverage' # generate .tox/.coverage, .tox/coverage.xml after test run
       for_envs: [py37, py36, py35, py27]
-
-
-- ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
-
-  - template: publish-pypi.yml@tox
-    parameters:
-      external_feed: 'pypi'
-      pypi_remote: 'tox-external-wheels'
-      dependsOn: [fix_lint, docs, package_description, dev, report_coverage]
