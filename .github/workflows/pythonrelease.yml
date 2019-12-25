@@ -24,4 +24,3 @@ jobs:
       run: |
         python -m pep517.build --binary --source --out-dir w .
         twine upload w/*
-

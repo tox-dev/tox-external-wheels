@@ -5,6 +5,11 @@ Versions follow `Semantic Versioning <https://semver.org/>`_ (``<major>.<minor>.
 Backward incompatible (breaking) changes will only be introduced in major versions
 with advance notice in the **Deprecations** section of releases.
 
+v0.1.5 (2019-12-24)
+-------------------
+
+- README update missing from previous version
+
 v0.1.4 (2019-12-18)
 -------------------
 
