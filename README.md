@@ -11,18 +11,24 @@ Use externally created wheels with Tox
 Features
 --------
 
-* The ability to define external wheel files to tests (example tox file):
+* The ability to define external wheel files to tests in the tox config (example tox file):
 
 ```
 [tox]
 envlist = py-{a,b,c}
 [testenv]
-external_wheel =
+external_wheels =
     a: {toxinidir}/dist/*py27*.whl
-    a: {toxinidir}/dist/*py37*.whl
+    b: {toxinidir}/dist/*py37*.whl
 commands =
     a,b: pytest test
     c: pip list
+```
+
+Or defined in a command line argument
+
+```
+tox -e 'py-{a,b,c}' --external_wheels 'a:{toxinidir}/dist/*py27*.whl;b:{toxinidir}/dist/*py37*.whl'
 ```
 
 **Note**: In this case `py-c` falls back to installing from source.
