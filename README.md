@@ -2,6 +2,7 @@
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/tox-external-wheels.svg)](https://pypi.org/project/tox-external-wheels/)
 [![Build Status](https://dev.azure.com/markoookeller/tox-external-wheels/_apis/build/status/keller00.tox-external-wheels?branchName=master)](https://dev.azure.com/markoookeller/tox-external-wheels/_build/latest?definitionId=2&branchName=master)
 [![Documentation status](https://readthedocs.org/projects/tox-external-wheels/badge/?version=latest&style=flat-square)](https://tox-external-wheels.readthedocs.io/en/latest/?badge=latest)
+[![Downloads](https://pepy.tech/badge/tox-external-wheels)](https://pepy.tech/project/tox-external-wheels)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
 # tox-external-wheels
