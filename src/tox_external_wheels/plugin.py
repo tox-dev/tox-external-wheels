@@ -2,7 +2,8 @@ import glob
 import os
 
 import pluggy
-from tox import reporter
+
+from .exception import MissingWheelFile, MultipleMatchingPatterns
 
 hookimpl = pluggy.HookimplMarker("tox")
 
@@ -40,15 +41,19 @@ def tox_package(session, venv):
         if len(matching_patterns) == 1:
             pattern = matching_patterns[0]
         elif len(matching_patterns) > 1:
-            reporter.error("More than one pattern matches current ".format(pattern))
-            SystemExit(1)
+            raise MultipleMatchingPatterns(
+                "These patterns: {} all match the current environment '{}'".format(
+                    matching_patterns, venv.name
+                )
+            )
     elif venv.envconfig.external_wheels:
         pattern = venv.envconfig.external_wheels
     if pattern:
+        # If a pattern is NOT found we fall off and return None, this will cause fallback
+        # to source installation
         files = [os.path.expanduser(os.path.expandvars(f)) for f in glob.glob(pattern)]
         if not files:
-            reporter.error("No wheel file was found with pattern: {}".format(pattern))
-            SystemExit(1)
+            raise MissingWheelFile("No wheel file was found with pattern: '{}'".format(pattern))
         if len(files) > 1:
             # Choose the file with the newest modification date
             files.sort(key=lambda p: os.path.getmtime(p), reverse=True)

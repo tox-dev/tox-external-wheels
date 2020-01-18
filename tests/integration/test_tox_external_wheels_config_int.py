@@ -2,6 +2,8 @@ import os
 from shutil import copy
 from time import sleep
 
+import pytest
+
 
 def test_simple_config(initproj, cmd, whl_dir):
     test_dir = str(
@@ -127,23 +129,21 @@ def test_finding_partial_ext_wheel(initproj, cmd, whl_dir):
     result.assert_success()
 
 
-def test_invalid_whl(initproj, cmd):
-    str(
-        initproj(
-            "alright_app-0.2.0",
-            filedefs={
-                "tox.ini": """
-                [tox]
-                envlist = py
-                [testenv]
-                external_wheels =
-                    *app*.whl
-                commands =
-                    python -c "print('done')"
-            """
-            },
-        )
+@pytest.mark.negative
+def test_err_missing_wheel_config(initproj, cmd, whl_dir):
+    initproj(
+        "cool_app-0.4.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            external_wheels =
+                {toxinidir}/missing_app-1.0.0-py2.py3-none-any.whl
+            commands=python -c "print('perform')"
+        """
+        },
     )
     result = cmd()
     assert result.ret == 1
-    assert "No wheel file was found with pattern: " in result.out
+    assert "MissingWheelFile: No wheel file was found with pattern:" in result.err

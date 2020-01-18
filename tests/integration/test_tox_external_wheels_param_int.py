@@ -2,6 +2,8 @@ import os
 from shutil import copy
 from time import sleep
 
+import pytest
+
 
 def test_simple_param(initproj, cmd, whl_dir):
     test_dir = str(
@@ -123,26 +125,6 @@ def test_finding_partial_ext_wheel(initproj, cmd, whl_dir):
     result.assert_success()
 
 
-def test_invalid_whl(initproj, cmd):
-    str(
-        initproj(
-            "alright_app-0.2.0",
-            filedefs={
-                "tox.ini": """
-                [tox]
-                envlist = py
-                [testenv]
-                commands =
-                    python -c "print('done')"
-            """
-            },
-        )
-    )
-    result = cmd("--external_wheels", "*app*.whl")
-    assert result.ret == 1
-    assert "No wheel file was found with pattern: " in result.out
-
-
 def test_param_override(initproj, cmd, whl_dir):
     """Make sure parameter overrides config value"""
     test_dir = str(
@@ -173,3 +155,57 @@ def test_param_override(initproj, cmd, whl_dir):
     assert "super" in result.session.venv_dict["py-a"].package
     assert "subpar" in result.session.venv_dict["py-b"].package
     result.assert_success()
+
+
+@pytest.mark.negative
+def test_err_invalid_whl(initproj, cmd):
+    initproj(
+        "alright_app-0.2.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            commands =
+                python -c "print('done')"
+        """
+        },
+    )
+    result = cmd("--external_wheels", "*app*.whl")
+    assert result.ret == 1
+    assert "MissingWheelFile: No wheel file was found with pattern: " in result.err
+
+
+@pytest.mark.negative
+@pytest.mark.parametrize("env", ["py", "py-a", "py-b"])
+def test_err_pattern_clashing(initproj, cmd, whl_dir, env):
+    test_dir = str(
+        initproj(
+            "alright_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py-{a,b}
+                [testenv]
+                external_wheels =
+                    a: {toxinidir}/subpar_app-0.2.0-py2.py3-none-any.whl
+                    b: {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
+                commands =
+                    python -c "exit(1)"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "subpar_app-0.2.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd(
+        "--external_wheels",
+        "{}: {{toxinidir}}/non_existent_app-0.0.1-py2.py3-none-any.whl;".format(env)
+        + "a:{toxinidir}/super_app-1.0.0-py2.py3-none-any.whl;"
+        + "b:{toxinidir}/subpar_app-0.2.0-py2.py3-none-any.whl",
+    )
+    assert result.ret == 1
+    assert (
+        "These patterns: ['" in result.err
+        and "'] all match the current environment '" in result.err
+    )
