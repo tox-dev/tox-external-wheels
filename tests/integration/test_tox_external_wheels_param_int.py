@@ -140,7 +140,7 @@ def test_invalid_whl(initproj, cmd):
     )
     result = cmd("--external_wheels", "*app*.whl")
     assert result.ret == 1
-    assert "No wheel file was found with pattern: " in result.out
+    assert "No wheel file was found with pattern: " in result.err
 
 
 def test_param_override(initproj, cmd, whl_dir):

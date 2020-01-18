@@ -146,25 +146,3 @@ def test_finding_partial_ext_wheel(initproj, cmd, whl_dir):
     assert "subpar" in result.session.venv_dict["py-a"].package
     assert str(result.session.venv_dict["py-b"].package).endswith("alright_app-0.2.0.zip")
     result.assert_success()
-
-
-def test_invalid_whl(initproj, cmd):
-    str(
-        initproj(
-            "alright_app-0.2.0",
-            filedefs={
-                "tox.ini": """
-                [tox]
-                envlist = py
-                [testenv]
-                external_wheels =
-                    *app*.whl
-                commands =
-                    python -c "print('done')"
-            """
-            },
-        )
-    )
-    result = cmd()
-    assert result.ret == 1
-    assert "No wheel file was found with pattern: " in result.out
