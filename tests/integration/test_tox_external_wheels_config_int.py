@@ -2,26 +2,7 @@ import os
 from shutil import copy
 from time import sleep
 
-
-def test_missing_wheel_config(initproj, cmd, whl_dir):
-    str(
-        initproj(
-            "cool_app-0.4.0",
-            filedefs={
-                "tox.ini": """
-                [tox]
-                envlist = py
-                [testenv]
-                external_wheels =
-                    {toxinidir}/missing_app-1.0.0-py2.py3-none-any.whl
-                commands=python -c "print('perform')"
-            """
-            },
-        )
-    )
-    result = cmd()
-    assert result.ret == 1
-    assert "Exception: No wheel file was found with pattern:" in result.err
+import pytest
 
 
 def test_simple_config(initproj, cmd, whl_dir):
@@ -146,3 +127,23 @@ def test_finding_partial_ext_wheel(initproj, cmd, whl_dir):
     assert "subpar" in result.session.venv_dict["py-a"].package
     assert str(result.session.venv_dict["py-b"].package).endswith("alright_app-0.2.0.zip")
     result.assert_success()
+
+
+@pytest.mark.negative
+def test_err_missing_wheel_config(initproj, cmd, whl_dir):
+    initproj(
+        "cool_app-0.4.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            external_wheels =
+                {toxinidir}/missing_app-1.0.0-py2.py3-none-any.whl
+            commands=python -c "print('perform')"
+        """
+        },
+    )
+    result = cmd()
+    assert result.ret == 1
+    assert "MissingWheelFile: No wheel file was found with pattern:" in result.err
