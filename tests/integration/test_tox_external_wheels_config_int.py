@@ -3,6 +3,27 @@ from shutil import copy
 from time import sleep
 
 
+def test_missing_wheel_config(initproj, cmd, whl_dir):
+    str(
+        initproj(
+            "cool_app-0.4.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                external_wheels =
+                    {toxinidir}/missing_app-1.0.0-py2.py3-none-any.whl
+                commands=python -c "print('perform')"
+            """
+            },
+        )
+    )
+    result = cmd()
+    assert result.ret == 1
+    assert "Exception: No wheel file was found with pattern:" in result.err
+
+
 def test_simple_config(initproj, cmd, whl_dir):
     test_dir = str(
         initproj(

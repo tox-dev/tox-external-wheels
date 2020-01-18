@@ -47,8 +47,7 @@ def tox_package(session, venv):
     if pattern:
         files = [os.path.expanduser(os.path.expandvars(f)) for f in glob.glob(pattern)]
         if not files:
-            reporter.error("No wheel file was found with pattern: {}".format(pattern))
-            SystemExit(1)
+            raise Exception("No wheel file was found with pattern: '{}'".format(pattern))
         if len(files) > 1:
             # Choose the file with the newest modification date
             files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
