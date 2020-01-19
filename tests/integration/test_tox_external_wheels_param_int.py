@@ -220,7 +220,7 @@ def test_err_pattern_clashing(initproj, cmd, whl_dir, env):
     )
 
 
-@pytest.mark.skipif(sys.platform == "win32", "bash unavailable on Windows")
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
 def test_external_build_param(initproj, cmd, whl_dir):
     """Test whether simple external build works in parameter form"""
     test_dir = str(
@@ -259,7 +259,7 @@ def test_external_build_missing_param(cmd):
 
 
 @pytest.mark.negative
-@pytest.mark.skipif(sys.platform == "win32", "bash unavailable on Windows")
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
 def test_external_build_err(initproj, cmd, whl_dir):
     """Test whether non 0 exit code from external build is handled correctly"""
     initproj(
@@ -285,7 +285,7 @@ def test_external_build_err(initproj, cmd, whl_dir):
     assert result.ret == 1
 
 
-@pytest.mark.skipif(sys.platform == "win32", "bash unavailable on Windows")
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
 def test_external_build_param_overwrite(initproj, cmd, whl_dir):
     """Test whether external build parameter overwrites config external build"""
     initproj(

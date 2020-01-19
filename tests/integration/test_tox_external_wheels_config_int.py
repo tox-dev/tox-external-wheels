@@ -156,7 +156,7 @@ def test_err_missing_wheel_config(initproj, cmd, whl_dir):
     assert "MissingWheelFile: No wheel file was found with pattern:" in result.err
 
 
-@pytest.mark.skipif(sys.platform == "win32", "bash unavailable on Windows")
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
 def test_external_build_config(initproj, cmd, whl_dir):
     test_dir = str(
         initproj(
@@ -188,7 +188,7 @@ def test_external_build_config(initproj, cmd, whl_dir):
 
 
 @pytest.mark.negative
-@pytest.mark.skipif(sys.platform == "win32", "bash unavailable on Windows")
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
 def test_external_build_err(initproj, cmd, whl_dir):
     """Test whether non 0 exit code from external build is handled correctly"""
     initproj(
