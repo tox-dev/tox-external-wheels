@@ -1,9 +1,11 @@
 import glob
 import os
+from subprocess import STDOUT, Popen
 
 import pluggy
+from tox import reporter
 
-from .exception import MissingWheelFile, MultipleMatchingPatterns
+from .exception import ExternalBuildNonZeroReturn, MissingWheelFile, MultipleMatchingPatterns
 
 hookimpl = pluggy.HookimplMarker("tox")
 
@@ -15,13 +17,20 @@ def tox_addoption(parser):
         name="external_wheels",
         type="string",
         default=None,
-        help="an argument pulled from the tox.ini",
+        help="locations of external wheel files",
+    )
+    parser.add_testenv_attribute(
+        name="external_build",
+        type="string",
+        default=None,
+        help="location of an external build script",
     )
     parser.add_argument(
         "--external_wheels",
         action="store",
-        help="Semi-colon separated list of external wheel paths",
+        help="semi-colon separated list of external wheel paths",
     )
+    parser.add_argument("--external_build", action="store", help="external wheel build script")
 
 
 @hookimpl
@@ -58,3 +67,25 @@ def tox_package(session, venv):
             # Choose the file with the newest modification date
             files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
         return files[0]
+
+
+@hookimpl
+def tox_configure(config):
+    def run_system_cmd(cmd):
+        """Helper to report running command and also to actually run the command"""
+        reporter.line("external_build: running command: {}".format(cmd))
+        p_cmd = Popen(cmd, shell=True, stderr=STDOUT)
+        stdout, _ = p_cmd.communicate()
+        if p_cmd.returncode != 0:
+            reporter.error("external_build: stdout+stderr: {}".format(p_cmd.returncode, stdout))
+            raise ExternalBuildNonZeroReturn(
+                "'{}' exited with return code: {}".format(cmd, p_cmd.returncode)
+            )
+
+    try:
+        param_index = config.args.index("--external_build")
+        run_system_cmd(config.args[param_index + 1])
+    except ValueError:
+        for env in config.envlist:
+            for cmd in config.envconfigs[env]._reader.getlist("external_build"):
+                run_system_cmd(cmd)

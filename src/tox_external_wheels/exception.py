@@ -7,3 +7,7 @@ class MissingWheelFile(Error):
 
 class MultipleMatchingPatterns(Error):
     """More than one parameter supplied pattern matches current environment"""
+
+
+class ExternalBuildNonZeroReturn(Error):
+    """Non zero return code from external build script"""

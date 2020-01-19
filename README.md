@@ -12,9 +12,8 @@ Use externally created wheels with Tox
 Features
 --------
 
-* The ability to define external wheel files to tests in the tox config (example tox file):
-
-```
+* The ability to define external wheel files to tests in the tox config (example `tox.ini` file):
+```ini
 [tox]
 envlist = py-{a,b,c}
 [testenv]
@@ -28,17 +27,38 @@ commands =
 
 Or defined in a command line argument
 
-```
+```shell script
 tox -e 'py-{a,b,c}' --external_wheels 'a:{toxinidir}/dist/*py27*.whl;b:{toxinidir}/dist/*py37*.whl'
 ```
 
 **Note**: In this case `py-c` falls back to installing from source.
 
+* The ability to define an external command to build wheel(s) with (example `tox.ini` file):
+```ini
+[tox]
+envlist = py-{a,b,c}
+[testenv]
+external_build=
+    ./prepare_build.sh
+    ./build.sh
+external_wheels =
+    {toxinidir}/dist/*.whl
+commands =
+    a,b: pytest test
+    c: pip list
+```
+
+Or defined in a command line argument
+```shell script
+tox -e 'py-{a,b,c}' --external_build './build.sh'
+```
+
+**Note**: if command exits with non-zero return code, error will be reported and exception will be raised.
 
 Requirements
 ------------
 
-* None
+* tox
 
 
 Installation

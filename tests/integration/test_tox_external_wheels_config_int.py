@@ -1,4 +1,5 @@
 import os
+import sys
 from shutil import copy
 from time import sleep
 
@@ -6,6 +7,7 @@ import pytest
 
 
 def test_simple_config(initproj, cmd, whl_dir):
+    """Test whether a simple external_wheel config works"""
     test_dir = str(
         initproj(
             "cool_app-0.4.0",
@@ -27,6 +29,7 @@ def test_simple_config(initproj, cmd, whl_dir):
 
 
 def test_more_complex_config(initproj, cmd, whl_dir):
+    """Test whether a more complex external_wheel config works"""
     test_dir = str(
         initproj(
             "alright_app-0.2.0",
@@ -52,6 +55,7 @@ def test_more_complex_config(initproj, cmd, whl_dir):
 
 
 def test_different_commands(initproj, cmd, whl_dir):
+    """Test whether a more complex external_wheel config works with different commands"""
     test_dir = str(
         initproj(
             "alright_app-0.2.0",
@@ -79,6 +83,8 @@ def test_different_commands(initproj, cmd, whl_dir):
 
 
 def test_finding_newest_whl(initproj, cmd, whl_dir):
+    """Test whether finding newest wheel function works (in case where pattern matches more
+    than 1 file"""
     test_dir = str(
         initproj(
             "alright_app-0.2.0",
@@ -131,6 +137,7 @@ def test_finding_partial_ext_wheel(initproj, cmd, whl_dir):
 
 @pytest.mark.negative
 def test_err_missing_wheel_config(initproj, cmd, whl_dir):
+    """Tests whether a use friendly error is thrown when no wheel file can be found"""
     initproj(
         "cool_app-0.4.0",
         filedefs={
@@ -145,5 +152,66 @@ def test_err_missing_wheel_config(initproj, cmd, whl_dir):
         },
     )
     result = cmd()
-    assert result.ret == 1
+    result.assert_fail()
     assert "MissingWheelFile: No wheel file was found with pattern:" in result.err
+
+
+@pytest.mark.skipif(sys.platform == "win32", "bash unavailable on Windows")
+def test_external_build_config(initproj, cmd, whl_dir):
+    test_dir = str(
+        initproj(
+            "cool_app-0.4.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                external_build =
+                    chmod +x build.bash
+                    ./build.bash
+                external_wheels =
+                    {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
+                commands=python -c "print('perform')"
+            """,
+                "build.bash": """#!/bin/bash
+                mv super_app_asd-1.0.0-py2.py3-none-any.whl super_app-1.0.0-py2.py3-none-any.whl
+            """,
+            },
+        )
+    )
+    copy(
+        os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"),
+        os.path.join(test_dir, "super_app_asd-1.0.0-py2.py3-none-any.whl"),
+    )
+    result = cmd()
+    result.assert_success()
+
+
+@pytest.mark.negative
+@pytest.mark.skipif(sys.platform == "win32", "bash unavailable on Windows")
+def test_external_build_err(initproj, cmd, whl_dir):
+    """Test whether non 0 exit code from external build is handled correctly"""
+    initproj(
+        "cool_app-0.4.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            external_build =
+                chmod +x build.bash
+                ./build.bash
+            commands=python -c "print('perform')"
+        """,
+            "build.bash": """#!/bin/bash
+            exit 1
+        """,
+        },
+    )
+    result = cmd()
+    assert "ERROR" in result.out
+    assert (
+        "ExternalBuildNonZeroReturn: ExternalBuildNonZeroReturn: "
+        "'./build.bash' exited with return code: 1" in result.err
+    )
+    assert result.ret == 1
