@@ -1,5 +1,6 @@
 import glob
 import os
+import re
 from subprocess import STDOUT, Popen
 
 import pluggy
@@ -8,6 +9,29 @@ from tox import reporter
 from .exception import ExternalBuildNonZeroReturn, MissingWheelFile, MultipleMatchingPatterns
 
 hookimpl = pluggy.HookimplMarker("tox")
+
+
+def part_of_env(pattern, env_name):
+    """Decide if pattern is part of env_name"""
+    for part in pattern.split("-"):
+        if part.startswith("!"):
+            if part[1:] in env_name:
+                return False
+        else:
+            if part not in env_name:
+                return False
+    return True
+
+
+def choose_whl(pattern):
+    """Chooses a wheel file given a globing pattern"""
+    files = [os.path.expanduser(os.path.expandvars(f)) for f in glob.glob(pattern)]
+    if not files:
+        raise MissingWheelFile("No wheel file was found with pattern: '{}'".format(pattern))
+    if len(files) > 1:
+        # Choose the file with the newest modification date
+        files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+    return files[0]
 
 
 @hookimpl
@@ -40,12 +64,13 @@ def tox_package(session, venv):
     if session.config.option.external_wheels:
         external_wheels = [
             e.split(":") if (":" in e) else ("", e)
-            for e in session.config.option.external_wheels.split(";")
+            # Remove multi wheels
+            for e in re.sub(r"\s?\(.*\)", "", session.config.option.external_wheels).split(";")
         ]
         matching_patterns = [
             venv.envconfig.setenv.reader._replace(v.strip())
             for k, v in external_wheels
-            if k in venv.name
+            if part_of_env(k, venv.name)
         ]
         if len(matching_patterns) == 1:
             pattern = matching_patterns[0]
@@ -56,17 +81,12 @@ def tox_package(session, venv):
                 )
             )
     elif venv.envconfig.external_wheels:
-        pattern = venv.envconfig.external_wheels
+        # Remove multi wheels
+        pattern = re.sub(r"\s?\(.*\)", "", venv.envconfig.external_wheels)
     if pattern:
         # If a pattern is NOT found we fall off and return None, this will cause fallback
         # to source installation
-        files = [os.path.expanduser(os.path.expandvars(f)) for f in glob.glob(pattern)]
-        if not files:
-            raise MissingWheelFile("No wheel file was found with pattern: '{}'".format(pattern))
-        if len(files) > 1:
-            # Choose the file with the newest modification date
-            files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
-        return files[0]
+        return choose_whl(pattern)
 
 
 @hookimpl
@@ -89,3 +109,32 @@ def tox_configure(config):
         for env in config.envlist:
             for cmd in config.envconfigs[env]._reader.getlist("external_build"):
                 run_system_cmd(cmd)
+
+
+@hookimpl
+def tox_testenv_install_deps(venv, action):
+    deps = venv.get_resolved_dependencies()
+    if deps:
+        pattern, patterns = None, None
+        if venv.envconfig.config.option.external_wheels:
+            pattern = venv.envconfig.config.option.external_wheels
+        elif venv.envconfig.external_wheels:
+            pattern = venv.envconfig.external_wheels
+        if pattern:
+            search = re.search(r"\((.*)\)", pattern)
+            if search:
+                patterns = search.group(1)
+        if patterns:
+            # If patterns is still None just fall of and return None
+            patterns = re.search(r"\((.*)\)", pattern).group(1)
+            for p in [pattern.strip() for pattern in patterns.split(";")]:
+                k, v = (e.strip() for e in p.split(":", 1))
+                try:
+                    k_id = [d.name for d in deps].index(k)
+                    deps[k_id].name = choose_whl(v)  # Resolve glob
+                except ValueError:
+                    continue
+            depinfo = ", ".join(map(str, deps))
+            action.setactivity("installdeps", depinfo)
+            venv._install(deps, action=action)
+            return True  # Return non-None to indicate plugin has completed
