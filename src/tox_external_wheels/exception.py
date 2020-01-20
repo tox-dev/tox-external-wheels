@@ -11,3 +11,7 @@ class MultipleMatchingPatterns(Error):
 
 class ExternalBuildNonZeroReturn(Error):
     """Non zero return code from external build script"""
+
+
+class MalformedExternalWheelsParameter(Error):
+    """Invalid external_wheel argument"""

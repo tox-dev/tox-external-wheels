@@ -356,3 +356,119 @@ def test_external_build_err_win(initproj, cmd, whl_dir):
     assert "ERROR" in result.out
     assert "ExternalBuildNonZeroReturn: 'EXIT /B 1' exited with return code: 1" in result.err
     assert result.ret == 1
+
+
+def test_mulitple_wheels(initproj, cmd, whl_dir):
+    """Test installing with multiple external wheels"""
+    test_dir = str(
+        initproj(
+            "super_app-0.3.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                deps =
+                    subpar_app
+                commands=python -c "import super_app; import subpar_app"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "subpar_app-0.2.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd('--external_wheels', 'py:super_app-*.whl (subpar_app: subpar_app-*.whl)')
+    result.assert_success()
+
+
+def test_mulitple_wheels_pip_override(initproj, cmd, whl_dir):
+    """Test installing with multiple external wheels while testing that when a package
+    is available on pip tox still installs the external wheel"""
+    test_dir = str(
+        initproj(
+            "super_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                deps =
+                    six
+                commands=python -c "import super_app; from six import mark; assert mark"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd('--external_wheels', 'super_app-*.whl (six: six-*.whl)')
+    result.assert_success()
+
+
+def test_mulitple_wheels_no_pip_override(initproj, cmd, whl_dir):
+    """Make sure we didn't break regular pip installp"""
+    test_dir = str(
+        initproj(
+            "super_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                deps =
+                    six
+                commands=python -c "import super_app; from six import __version__; assert __version__"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd('--external_wheels', 'super_app-*.whl')
+    result.assert_success()
+
+
+def test_mulitple_wheels_different_no_pip_override(initproj, cmd, whl_dir):
+    """Make sure if non-used external wheels don't cause issues"""
+    test_dir = str(
+        initproj(
+            "super_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                deps =
+                    six
+                commands=python -c "import super_app; import six; assert 'mark' not in dir(six)"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd('--external_wheels', 'super_app-*.whl (sox: six-*.whl)')
+    result.assert_success()
+
+
+def test_mulitple_wheels_no_env_name(initproj, cmd, whl_dir):
+    """Make sure the case when no env name is given, but multi wheel is used works"""
+    test_dir = str(
+        initproj(
+            "super_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                deps =
+                    six
+                commands=python -c "import super_app; from six import mark; assert mark"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd('--external_wheels', 'super_app-*.whl (six: six-*.whl)')
+    result.assert_success()
