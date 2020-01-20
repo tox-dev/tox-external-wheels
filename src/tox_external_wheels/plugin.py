@@ -6,11 +6,7 @@ from subprocess import STDOUT, Popen
 import pluggy
 from tox import reporter
 
-from .exception import (
-    ExternalBuildNonZeroReturn,
-    MissingWheelFile,
-    MultipleMatchingPatterns,
-)
+from .exception import ExternalBuildNonZeroReturn, MissingWheelFile, MultipleMatchingPatterns
 
 hookimpl = pluggy.HookimplMarker("tox")
 
@@ -66,6 +62,15 @@ def tox_package(session, venv):
     pattern = None
     # Argument overrides config
     if session.config.option.external_wheels:
+        # if re.fullmatch(
+        #     r"(\w+:\s?[a-zA-Z0-9~\.\*\?\[\]\-/]+\s?(\((\w+:\s?[a-zA-Z0-9~\.\*\?\[\]\-/]+\s?;"
+        #     r"\s?)*(\w+:\s?[a-zA-Z0-9~\.\*\?\[\]\-/]+)\))?\s?;\s?)*(\w+:\s?[a-zA-Z0-9~\.\*\?"
+        #     r"\[\]\-/]+\s?(\((\w+:\s?[a-zA-Z0-9~\.\*\?\[\]\-/]+\s?;\s?)*(\w+:\s?[a-zA-Z0-9~\."
+        #     r"\*\?\[\]\-/]+)\))?)$^",
+        #     session.config.option.external_wheels,
+        # ):
+        #     raise MalformedExternalWheelsParameter("invalid external_wheels parameter")
+
         external_wheels = [
             e.split(":") if (":" in e) else ("", e)
             # Remove multi wheels

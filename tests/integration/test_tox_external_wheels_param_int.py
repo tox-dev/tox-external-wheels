@@ -377,7 +377,7 @@ def test_mulitple_wheels(initproj, cmd, whl_dir):
     )
     copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
     copy(os.path.join(whl_dir, "subpar_app-0.2.0-py2.py3-none-any.whl"), test_dir)
-    result = cmd('--external_wheels', 'py:super_app-*.whl (subpar_app: subpar_app-*.whl)')
+    result = cmd("--external_wheels", "py:super_app-*.whl (subpar_app: subpar_app-*.whl)")
     result.assert_success()
 
 
@@ -401,7 +401,7 @@ def test_mulitple_wheels_pip_override(initproj, cmd, whl_dir):
     )
     copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
     copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
-    result = cmd('--external_wheels', 'super_app-*.whl (six: six-*.whl)')
+    result = cmd("--external_wheels", "super_app-*.whl (six: six-*.whl)")
     result.assert_success()
 
 
@@ -417,14 +417,14 @@ def test_mulitple_wheels_no_pip_override(initproj, cmd, whl_dir):
                 [testenv]
                 deps =
                     six
-                commands=python -c "import super_app; from six import __version__; assert __version__"
+                commands=python -c "import super_app; from six import __version__ as v; assert v"
             """
             },
         )
     )
     copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
     copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
-    result = cmd('--external_wheels', 'super_app-*.whl')
+    result = cmd("--external_wheels", "super_app-*.whl")
     result.assert_success()
 
 
@@ -447,7 +447,7 @@ def test_mulitple_wheels_different_no_pip_override(initproj, cmd, whl_dir):
     )
     copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
     copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
-    result = cmd('--external_wheels', 'super_app-*.whl (sox: six-*.whl)')
+    result = cmd("--external_wheels", "super_app-*.whl (sox: six-*.whl)")
     result.assert_success()
 
 
@@ -470,5 +470,5 @@ def test_mulitple_wheels_no_env_name(initproj, cmd, whl_dir):
     )
     copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
     copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
-    result = cmd('--external_wheels', 'super_app-*.whl (six: six-*.whl)')
+    result = cmd("--external_wheels", "super_app-*.whl (six: six-*.whl)")
     result.assert_success()

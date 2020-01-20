@@ -333,7 +333,7 @@ def test_mulitple_wheels_no_pip_override(initproj, cmd, whl_dir):
                 deps =
                     six
                 external_wheels = super_app-*.whl
-                commands=python -c "import super_app; from six import __version__; assert __version__"
+                commands=python -c "import super_app; from six import __version__ as v; assert v"
             """
             },
         )
@@ -342,6 +342,7 @@ def test_mulitple_wheels_no_pip_override(initproj, cmd, whl_dir):
     copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
     result = cmd()
     result.assert_success()
+
 
 def test_mulitple_wheels_different_no_pip_override(initproj, cmd, whl_dir):
     """Make sure if non-used external wheels don't cause issues"""
