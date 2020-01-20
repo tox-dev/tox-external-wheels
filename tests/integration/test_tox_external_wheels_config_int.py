@@ -157,7 +157,8 @@ def test_err_missing_wheel_config(initproj, cmd, whl_dir):
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
-def test_external_build_config(initproj, cmd, whl_dir):
+def test_external_build_config_unix(initproj, cmd, whl_dir):
+    """Test that external build works on Unix"""
     test_dir = str(
         initproj(
             "cool_app-0.4.0",
@@ -189,7 +190,7 @@ def test_external_build_config(initproj, cmd, whl_dir):
 
 @pytest.mark.negative
 @pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
-def test_external_build_err(initproj, cmd, whl_dir):
+def test_external_build_err_unix(initproj, cmd, whl_dir):
     """Test whether non 0 exit code from external build is handled correctly"""
     initproj(
         "cool_app-0.4.0",
@@ -213,5 +214,59 @@ def test_external_build_err(initproj, cmd, whl_dir):
     assert (
         "ExternalBuildNonZeroReturn: ExternalBuildNonZeroReturn: "
         "'./build.bash' exited with return code: 1" in result.err
+    )
+    assert result.ret == 1
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="bash unavailable on Windows")
+def test_external_build_config_win(initproj, cmd, whl_dir):
+    """Test that external build works on Windows"""
+    test_dir = str(
+        initproj(
+            "cool_app-0.4.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                external_build =
+                    move super_app_asd-1.0.0-py2.py3-none-any.whl super_app-1.0.0-py2.py3-none-any.whl
+                external_wheels =
+                    {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
+                commands=python -c "print('perform')"
+            """,
+            },
+        )
+    )
+    copy(
+        os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"),
+        os.path.join(test_dir, "super_app_asd-1.0.0-py2.py3-none-any.whl"),
+    )
+    result = cmd()
+    result.assert_success()
+
+
+@pytest.mark.negative
+@pytest.mark.skipif(sys.platform != "win32", reason="bash unavailable on Windows")
+def test_external_build_err_win(initproj, cmd, whl_dir):
+    """Test whether non 0 exit code from external build is handled correctly on Windows"""
+    initproj(
+        "cool_app-0.4.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            external_build =
+                EXIT /B 1
+            commands=python -c "print('perform')"
+        """,
+        },
+    )
+    result = cmd()
+    assert "ERROR" in result.out
+    assert (
+            "ExternalBuildNonZeroReturn: ExternalBuildNonZeroReturn: "
+            "'./build.bash' exited with return code: 1" in result.err
     )
     assert result.ret == 1
