@@ -230,17 +230,17 @@ def test_external_build_config_win(initproj, cmd, whl_dir):
                 envlist = py
                 [testenv]
                 external_build =
-                    move super_app_asd-1.0.0-py2.py3-none-any.whl super_app-1.0.0-py2.py3-none-any.whl
+                    move asd.whl super_app-1.0.0-py2.py3-none-any.whl
                 external_wheels =
                     {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
                 commands=python -c "print('perform')"
-            """,
+            """
             },
         )
     )
     copy(
         os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"),
-        os.path.join(test_dir, "super_app_asd-1.0.0-py2.py3-none-any.whl"),
+        os.path.join(test_dir, "asd.whl"),
     )
     result = cmd()
     result.assert_success()
@@ -260,13 +260,10 @@ def test_external_build_err_win(initproj, cmd, whl_dir):
             external_build =
                 EXIT /B 1
             commands=python -c "print('perform')"
-        """,
+        """
         },
     )
     result = cmd()
     assert "ERROR" in result.out
-    assert (
-            "ExternalBuildNonZeroReturn: ExternalBuildNonZeroReturn: "
-            "'./build.bash' exited with return code: 1" in result.err
-    )
+    assert "ExternalBuildNonZeroReturn: 'EXIT /B 1' exited with return code: 1" in result.err
     assert result.ret == 1
