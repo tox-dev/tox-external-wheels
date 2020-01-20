@@ -472,3 +472,22 @@ def test_mulitple_wheels_no_env_name(initproj, cmd, whl_dir):
     copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
     result = cmd("--external_wheels", "super_app-*.whl (six: six-*.whl)")
     result.assert_success()
+
+
+def test_totally_regular_tox(initproj, cmd):
+    """Let's make sure we have not broken a regular tox situation"""
+    initproj(
+        "super_app-0.2.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            deps = six
+            commands=python -c "import super_app; import six; assert 'mark' not in dir(six)"
+        """
+        },
+    )
+    result = cmd()
+    result.assert_success()
+    pass
