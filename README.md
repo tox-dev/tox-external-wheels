@@ -28,10 +28,10 @@ commands =
 Or defined in a command line argument
 
 ```shell script
-tox -e 'py-{a,b,c}' --external_wheels 'a:{toxinidir}/dist/*py27*.whl;b:{toxinidir}/dist/*py37*.whl'
+tox -e 'py-{a,b,c}' --external_wheels 'a:dist/*py27*.whl;b:dist/*py37*.whl'
 ```
 
-**Note**: In this case `py-c` falls back to installing from source.
+**Notes**: In this case `py-c` falls back to installing from source. `tox-external_wheels` now supports ! in env names
 
 * The ability to define an external command to build wheel(s) with (example `tox.ini` file):
 ```ini
@@ -54,6 +54,28 @@ tox -e 'py-{a,b,c}' --external_build './build.sh'
 ```
 
 **Note**: if command exits with non-zero return code, error will be reported and exception will be raised.
+
+* Support installing dependencies from external wheel files by adding their name into the `external_wheels` in config
+
+```ini
+[tox]
+envlist = py-{a,b,c}
+[testenv]
+deps = six
+external_wheels =
+    a: {toxinidir}/dist/*py27*.whl (six: six-*.whl)
+    b: {toxinidir}/dist/*py37*.whl
+commands =
+    a,b: pytest test
+    c: pip list
+```
+
+Or defined in a command line argument
+
+```shell script
+tox -e 'py-{a,b,c}' --external_wheels 'a:dist/*py27*.whl (six: six-*.whl);b:/dist/*py37*.whl'
+```
+
 
 Requirements
 ------------
