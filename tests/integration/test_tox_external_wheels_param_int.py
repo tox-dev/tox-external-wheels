@@ -1,4 +1,5 @@
 import os
+import sys
 from shutil import copy
 from time import sleep
 
@@ -6,6 +7,7 @@ import pytest
 
 
 def test_simple_param(initproj, cmd, whl_dir):
+    """Test whether a simple external_wheel config works"""
     test_dir = str(
         initproj(
             "cool_app-0.4.0",
@@ -25,6 +27,7 @@ def test_simple_param(initproj, cmd, whl_dir):
 
 
 def test_more_complex_config(initproj, cmd, whl_dir):
+    """Test whether a more comlicated external_wheel config works"""
     test_dir = str(
         initproj(
             "alright_app-0.2.0",
@@ -51,6 +54,7 @@ def test_more_complex_config(initproj, cmd, whl_dir):
 
 
 def test_different_commands(initproj, cmd, whl_dir):
+    """Test whether a more complex external_wheel config works with different commands"""
     test_dir = str(
         initproj(
             "alright_app-0.2.0",
@@ -79,6 +83,8 @@ def test_different_commands(initproj, cmd, whl_dir):
 
 
 def test_finding_newest_whl(initproj, cmd, whl_dir):
+    """Test whether finding newest wheel function works (in case where pattern
+    matches more than 1 file"""
     test_dir = str(
         initproj(
             "alright_app-0.2.0",
@@ -159,6 +165,7 @@ def test_param_override(initproj, cmd, whl_dir):
 
 @pytest.mark.negative
 def test_err_invalid_whl(initproj, cmd):
+    """Test whether user friendly error is thrown if no wheel file is found"""
     initproj(
         "alright_app-0.2.0",
         filedefs={
@@ -179,6 +186,8 @@ def test_err_invalid_whl(initproj, cmd):
 @pytest.mark.negative
 @pytest.mark.parametrize("env", ["py", "py-a", "py-b"])
 def test_err_pattern_clashing(initproj, cmd, whl_dir, env):
+    """Test whether a user friendly error is thrown when parameter external
+    wheel environments clash"""
     test_dir = str(
         initproj(
             "alright_app-0.2.0",
@@ -209,3 +218,141 @@ def test_err_pattern_clashing(initproj, cmd, whl_dir, env):
         "These patterns: ['" in result.err
         and "'] all match the current environment '" in result.err
     )
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
+def test_external_build_param(initproj, cmd, whl_dir):
+    """Test whether simple external build works in parameter form"""
+    test_dir = str(
+        initproj(
+            "cool_app-0.4.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                external_wheels =
+                    {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
+                commands=python -c "print('perform')"
+            """,
+                "build.bash": """#!/bin/bash
+                pwd
+                mv super_app_asd-1.0.0-py2.py3-none-any.whl super_app-1.0.0-py2.py3-none-any.whl
+            """,
+            },
+        )
+    )
+    copy(
+        os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"),
+        os.path.join(test_dir, "super_app_asd-1.0.0-py2.py3-none-any.whl"),
+    )
+    result = cmd("--external_build", "chmod +x build.bash; ./build.bash")
+    result.assert_success()
+
+
+@pytest.mark.negative
+def test_external_build_missing_param(cmd):
+    """Test whether external build cannot be called without a value"""
+    result = cmd("--external_build")
+    assert result.ret == 2
+    assert "tox: error: argument --external_build: expected one argument" in result.err
+
+
+@pytest.mark.negative
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
+def test_external_build_err(initproj, cmd, whl_dir):
+    """Test whether non 0 exit code from external build is handled correctly"""
+    initproj(
+        "cool_app-0.4.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            commands=python -c "print('perform')"
+        """,
+            "build.bash": """#!/bin/bash
+            exit 1
+        """,
+        },
+    )
+    result = cmd("--external_build", "chmod +x build.bash; ./build.bash")
+    assert "ERROR" in result.out
+    assert (
+        "ExternalBuildNonZeroReturn: ExternalBuildNonZeroReturn: "
+        "'chmod +x build.bash; ./build.bash' exited with return code: 1" in result.err
+    )
+    assert result.ret == 1
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="bash unavailable on Windows")
+def test_external_build_param_overwrite(initproj, cmd, whl_dir):
+    """Test whether external build parameter overwrites config external build"""
+    initproj(
+        "cool_app-0.4.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            external_build=
+               chmod +x bad_build.bash
+               bad_build.bash
+            commands=python -c "print('perform')"
+        """,
+            "build.bash": """#!/bin/bash
+            exit 0
+        """,
+            "bad_build.bash": """#!/bin/bash
+            exit 1""",
+        },
+    )
+    result = cmd("--external_build", "chmod +x build.bash; ./build.bash")
+    result.assert_success()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="bash unavailable on Windows")
+def test_external_build_config_win(initproj, cmd, whl_dir):
+    """Test that external build works on Windows"""
+    test_dir = str(
+        initproj(
+            "cool_app-0.4.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                external_wheels =
+                    {toxinidir}/super_app-1.0.0-py2.py3-none-any.whl
+                commands=python -c "print('perform')"
+            """
+            },
+        )
+    )
+    copy(
+        os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"),
+        os.path.join(test_dir, "asd.whl"),
+    )
+    result = cmd("--external_build", "move asd.whl super_app-1.0.0-py2.py3-none-any.whl")
+    result.assert_success()
+
+
+@pytest.mark.negative
+@pytest.mark.skipif(sys.platform != "win32", reason="bash unavailable on Windows")
+def test_external_build_err_win(initproj, cmd, whl_dir):
+    """Test whether non 0 exit code from external build is handled correctly on Windows"""
+    initproj(
+        "cool_app-0.4.0",
+        filedefs={
+            "tox.ini": """
+            [tox]
+            envlist = py
+            [testenv]
+            commands=python -c "print('perform')"
+        """
+        },
+    )
+    result = cmd("--external_build", "EXIT /B 1")
+    assert "ERROR" in result.out
+    assert "ExternalBuildNonZeroReturn: 'EXIT /B 1' exited with return code: 1" in result.err
+    assert result.ret == 1
