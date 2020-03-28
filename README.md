@@ -63,7 +63,7 @@ envlist = py-{a,b,c}
 [testenv]
 deps = six
 external_wheels =
-    a: {toxinidir}/dist/*py27*.whl (six: six-*.whl)
+    a: {toxinidir}/dist/*py27*.whl (six: six-*.whl[optional_extra])
     b: {toxinidir}/dist/*py37*.whl
 commands =
     a,b: pytest test
@@ -73,7 +73,7 @@ commands =
 Or defined in a command line argument
 
 ```shell script
-tox -e 'py-{a,b,c}' --external_wheels 'a:dist/*py27*.whl (six: six-*.whl);b:/dist/*py37*.whl'
+tox -e 'py-{a,b,c}' --external_wheels 'a:dist/*py27*.whl (six: six-*.whl[optional_extra]);b:/dist/*py37*.whl'
 ```
 
 

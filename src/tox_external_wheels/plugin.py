@@ -25,13 +25,14 @@ def part_of_env(pattern, env_name):
 
 def choose_whl(pattern):
     """Chooses a wheel file given a globing pattern"""
-    files = [os.path.expanduser(os.path.expandvars(f)) for f in glob.glob(pattern)]
+    no_options_pattern, options = re.search(r"^([^\[\]]*)(?:\[(.*)\])?$", pattern).groups()
+    files = [os.path.expanduser(os.path.expandvars(f)) for f in glob.glob(no_options_pattern)]
     if not files:
         raise MissingWheelFile("No wheel file was found with pattern: '{}'".format(pattern))
     if len(files) > 1:
         # Choose the file with the newest modification date
         files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
-    return files[0]
+    return files[0], options
 
 
 @hookimpl
@@ -86,7 +87,10 @@ def tox_package(session, venv):
     if pattern:
         # If a pattern is NOT found we fall off and return None, this will cause fallback
         # to source installation
-        return choose_whl(pattern)
+        wheel, options = choose_whl(
+            pattern
+        )  # Tox already supports adding extras, we don't need to worry about them
+        return wheel
 
 
 @hookimpl
@@ -131,7 +135,10 @@ def tox_testenv_install_deps(venv, action):
                 k, v = (e.strip() for e in p.split(":", 1))
                 try:
                     k_id = [d.name for d in deps].index(k)
-                    deps[k_id].name = choose_whl(v)  # Resolve glob
+                    wheel, options = choose_whl(v)
+                    deps[k_id].name = "{}{}".format(
+                        wheel, "[{}]".format(options) if options else ""
+                    )  # Resolve glob
                 except ValueError:
                     continue
             depinfo = ", ".join(map(str, deps))
