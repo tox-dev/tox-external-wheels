@@ -491,3 +491,26 @@ def test_totally_regular_tox(initproj, cmd):
     result = cmd()
     result.assert_success()
     pass
+
+
+def test_multiplewheels_options(initproj, cmd, whl_dir):
+    """Make sure the case when no env name is given, but multi wheel is used works"""
+    test_dir = str(
+        initproj(
+            "super_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                [tox]
+                envlist = py
+                [testenv]
+                deps = six
+                commands=
+                    python -c "import super_app; import pytest; from six import mark; assert mark"
+            """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd("--external_wheels", "super_app-*.whl (six: six-*.whl[someoption])")
+    result.assert_success()

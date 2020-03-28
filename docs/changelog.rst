@@ -5,6 +5,18 @@ Versions follow `Semantic Versioning <https://semver.org/>`_ (``<major>.<minor>.
 Backward incompatible (breaking) changes will only be introduced in major versions
 with advance notice in the **Deprecations** section of releases.
 
+v0.1.7 (2019-03.28)
+-------------------
+
+- added extra support to multiwheel dependencies
+
+v0.1.6 (2019-01-20)
+-------------------
+
+- multi wheel: added options to add dependency external wheels
+- external build: option to run an external build script
+- exception improvements: more human readable and descriptive errors
+
 v0.1.5 (2019-12-24)
 -------------------
 
