@@ -106,10 +106,14 @@ def tox_configure(config):
                 "'{}' exited with return code: {}".format(cmd, p_cmd.returncode)
             )
 
-    try:
+    if "--external_build" in config.args:
         param_index = config.args.index("--external_build")
         run_system_cmd(config.args[param_index + 1])
-    except ValueError:
+    else:
+        for env in config.envlist:
+            if env not in config.envconfigs.keys():
+                reporter.error("unknown environment {!r}".format(env))
+                raise LookupError(env)
         for env in config.envlist:
             for cmd in config.envconfigs[env]._reader.getlist("external_build"):
                 run_system_cmd(cmd)

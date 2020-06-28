@@ -514,3 +514,24 @@ def test_multiplewheels_options(initproj, cmd, whl_dir):
     copy(os.path.join(whl_dir, "six-1.14.0-py2.py3-none-any.whl"), test_dir)
     result = cmd("--external_wheels", "super_app-*.whl (six: six-*.whl[someoption])")
     result.assert_success()
+
+
+def test_non_existing_env_name(initproj, cmd, whl_dir):
+    test_dir = str(
+        initproj(
+            "super_app-0.2.0",
+            filedefs={
+                "tox.ini": """
+                    [tox]
+                    envlist = py
+                    [testenv]
+                    commands=
+                        python -c "import super_app;"
+                """
+            },
+        )
+    )
+    copy(os.path.join(whl_dir, "super_app-1.0.0-py2.py3-none-any.whl"), test_dir)
+    result = cmd("-e", "non_existing", "--external_wheels", "super_app-*.whl")
+    result.assert_fail()
+    assert result.out.strip() == "ERROR: unknown environment 'non_existing'"
