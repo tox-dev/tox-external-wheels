@@ -101,7 +101,9 @@ def tox_configure(config):
         p_cmd = Popen(cmd, shell=True, stderr=STDOUT)
         stdout, _ = p_cmd.communicate()
         if p_cmd.returncode != 0:
-            reporter.error("external_build: stdout+stderr: {}".format(p_cmd.returncode, stdout))
+            reporter.error(
+                "external_build: exit code: {}, stdout+stderr: {}".format(p_cmd.returncode, stdout)
+            )
             raise ExternalBuildNonZeroReturn(
                 "'{}' exited with return code: {}".format(cmd, p_cmd.returncode)
             )
