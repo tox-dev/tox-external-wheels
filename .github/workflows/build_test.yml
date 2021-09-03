@@ -1,0 +1,52 @@
+name: Build and Test
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+      branches:
+        - master
+
+env:
+  PIP_NO_WARN_SCRIPT_LOCATION: "0"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  dev:
+    name: Setup dev environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Display Python version
+        run: python -c "import sys; import os; print(\"\n\".join(os.environ[\"PATH\"].split(os.pathsep))); print(sys.version); print(sys.executable);"
+      - name: Upgrade setuptools, pip and wheel
+        run: python -m pip install -U setuptools pip wheel
+      - name: Install tox
+        run: python -m pip install tox
+      - name: Creating dev environment
+        run: python -m tox -e dev
+
+  package_description:
+    name: Check package description
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Display Python version
+        run: python -c "import sys; import os; print(\"\n\".join(os.environ[\"PATH\"].split(os.pathsep))); print(sys.version); print(sys.executable);"
+      - name: Upgrade setuptools, pip and wheel
+        run: python -m pip install -U setuptools pip wheel
+      - name: Install tox
+        run: python -m pip install tox
+      - name: Running package description environment
+        run: python -m tox -e package_description
