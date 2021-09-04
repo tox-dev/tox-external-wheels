@@ -9,10 +9,10 @@
 
 Use externally created wheels with Tox
 
-Features
---------
+## Features
 
-* The ability to define external wheel files to tests in the tox config (example `tox.ini` file):
+- The ability to define external wheel files to tests in the tox config (example `tox.ini` file):
+
 ```ini
 [tox]
 envlist = py-{a,b,c}
@@ -33,7 +33,8 @@ tox -e 'py-{a,b,c}' --external_wheels 'a:dist/*py27*.whl;b:dist/*py37*.whl'
 
 **Notes**: In this case `py-c` falls back to installing from source. `tox-external_wheels` now supports ! in env names
 
-* The ability to define an external command to build wheel(s) with (example `tox.ini` file):
+- The ability to define an external command to build wheel(s) with (example `tox.ini` file):
+
 ```ini
 [tox]
 envlist = py-{a,b,c}
@@ -49,13 +50,14 @@ commands =
 ```
 
 Or defined in a command line argument
+
 ```shell script
 tox -e 'py-{a,b,c}' --external_build './build.sh'
 ```
 
 **Note**: if command exits with non-zero return code, error will be reported and exception will be raised.
 
-* Support installing dependencies from external wheel files by adding their name into the `external_wheels` in config
+- Support installing dependencies from external wheel files by adding their name into the `external_wheels` in config
 
 ```ini
 [tox]
@@ -76,15 +78,11 @@ Or defined in a command line argument
 tox -e 'py-{a,b,c}' --external_wheels 'a:dist/*py27*.whl (six: six-*.whl[optional_extra]);b:/dist/*py37*.whl'
 ```
 
+## Requirements
 
-Requirements
-------------
+- tox
 
-* tox
-
-
-Installation
-------------
+## Installation
 
 You can install "tox-external-wheels" via [pip](https://pypi.org/project/pip/) from [PyPI](https://pypi.org):
 
@@ -92,26 +90,20 @@ You can install "tox-external-wheels" via [pip](https://pypi.org/project/pip/) f
 pip install tox-external-wheels
 ```
 
-Usage
------
+## Usage
 
 Use the `external_wheel` option. Like shown in [usage](#usage)
 
-Contributing
-------------
-Contributions are very welcome. Tests can be run with [tox](https://tox.readthedocs.io/en/latest/), please ensure
-the coverage at least stays the same before you submit a pull request.
+## Contributing
 
-License
--------
+Contributions are very welcome. Tests can be run with [tox](https://tox.readthedocs.io/en/latest/), please ensure the
+coverage at least stays the same before you submit a pull request.
 
-Distributed under the terms of the **MIT** license, `tox-external-wheels` is
-free and open source software.
+## License
 
+Distributed under the terms of the **MIT** license, `tox-external-wheels` is free and open source software.
 
-Issues
-------
+## Issues
 
-If you encounter any problems, please
-[file an issue](https://github.com/keller00/tox-external-wheels/issues)
-along with a detailed description.
+If you encounter any problems, please [file an issue](https://github.com/keller00/tox-external-wheels/issues) along with
+a detailed description.

@@ -1,10 +1,18 @@
 [build-system]
 requires = [
-    "setuptools >= 40.0.4",
-    "setuptools_scm >= 2.0.0, <4",
-    "wheel >= 0.29.0",
+    "setuptools >= 57",
+    "wheel >= 0.37",
+    "setuptools_scm[toml]>=6",
 ]
-build-backend = 'setuptools.build_meta'
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "src/tox_external_wheels/version.py"
 
 [tool.black]
-line-length = 99
+line-length = 120
+
+[tool.isort]
+line_length = 120
+profile = "black"
+known_first_party = ["tox_external_wheels"]
