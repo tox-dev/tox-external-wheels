@@ -1,5 +1,5 @@
 repos:
--   repo: https://github.com/python/black
+-   repo: https://github.com/psf/black
     rev: 21.8b0
     hooks:
     -   id: black
@@ -14,8 +14,8 @@ repos:
     hooks:
     -   id: seed-isort-config
         args: [--application-directories, "src:."]
--   repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.9.3
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.9.3
     hooks:
     -   id: isort
 -   repo: https://github.com/pre-commit/pre-commit-hooks
