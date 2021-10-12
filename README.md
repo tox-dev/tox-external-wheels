@@ -19,6 +19,7 @@ package = external
 package_env = .ext
 commands =
     python -c 'from some_package import do; do()'
+
 [testenv:.ext]
 deps = build
 package_glob =
