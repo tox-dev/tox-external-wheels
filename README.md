@@ -1,6 +1,5 @@
 [![Latest version on PyPi](https://badge.fury.io/py/tox-external-wheels.svg)](https://badge.fury.io/py/tox-external-wheels)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/tox-external-wheels.svg)](https://pypi.org/project/tox-external-wheels/)
-[![Build Status](https://dev.azure.com/markoookeller/tox-external-wheels/_apis/build/status/keller00.tox-external-wheels?branchName=master)](https://dev.azure.com/markoookeller/tox-external-wheels/_build/latest?definitionId=2&branchName=master)
 [![Documentation status](https://readthedocs.org/projects/tox-external-wheels/badge/?version=latest&style=flat-square)](https://tox-external-wheels.readthedocs.io/en/latest/?badge=latest)
 [![Downloads](https://pepy.tech/badge/tox-external-wheels)](https://pepy.tech/project/tox-external-wheels)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
@@ -8,6 +7,37 @@
 # tox-external-wheels
 
 Use externally created wheels with Tox
+
+This plugin has been merged into `tox` as part of version `4.0`, and it will **not** be maintained anymore.
+
+## Migration guide
+
+* To use externally built packages:
+```ini
+[testenv]
+package = external
+package_env = .ext
+commands =
+    python -c 'from some_package import do; do()'
+
+[testenv:.ext]
+deps = build
+package_glob =
+    py39: {envtmpdir}{/}dist{/}*py39*.whl
+    py310: {envtmpdir}{/}dist{/}*py310*.whl
+commands =
+    pyproject-build -w . -o {envtmpdir}{/}dist
+```
+
+Note that many of the original plugin's features become trivial with the new external build environments.
+Running a build script is just as easy as running `build` and installing extra dependencies is possible through `deps`,
+or by using `extras`.
+
+To specify wheel file location as a command line argument, see: `--installpkg`.
+
+## Old usage
+
+The rest of the README describes the usage of this plugin for people that cannot migrate to a modern `tox` version.
 
 Features
 --------
