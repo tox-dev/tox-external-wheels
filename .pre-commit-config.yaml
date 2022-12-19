@@ -15,7 +15,7 @@ repos:
     -   id: seed-isort-config
         args: [--application-directories, "src:."]
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: v5.11.3
     hooks:
     -   id: isort
 -   repo: https://github.com/pre-commit/pre-commit-hooks
